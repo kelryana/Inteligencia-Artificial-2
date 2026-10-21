@@ -583,7 +583,8 @@ def main() -> None:
             trilha.append(tuple(serie[i, :2]))  # trilha dos pés no chão
             caixa_translucida(img, caixa, VERDE, 0.15, 3)
             escrever(img, "pessoa", (int(caixa[0]), max(20, int(caixa[1]) - 8)), 0.6, VERDE)
-            linhas = [(f"t = {i / fps:5.1f} s  |  Estado: RASTREANDO (CNN)", VERDE)]
+            tag_det = "GT" if args.reusar_deteccoes else ("FUNDO" if args.detector == "fundo" else "CNN")
+            linhas = [(f"t = {i / fps:5.1f} s  |  Estado: RASTREANDO ({tag_det})", VERDE)]
             if mostrar_s > 0 and ultimo_prev is not None and i - ultimo_prev <= 2 * args.passo:
                 cam, inc = previsoes_t[ultimo_prev]
                 n_pts = min(int(round(mostrar_s * fps)), len(cam) - 1)

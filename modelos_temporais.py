@@ -48,18 +48,17 @@ class PoseEKF:
         self.R = np.eye(dim_obs, dtype=np.float32) * r_noise
 
     def inicializar(self, trajetoria_inicial):
-        """Inicializa o estado usando os primeiros frames disponíveis."""
+        """Inicializa o estado usando os frames recentes com velocidade suavizada."""
         if len(trajetoria_inicial) == 0:
             return
         p0 = trajetoria_inicial[-1]
         self.x[:self.dim_obs] = p0
         if len(trajetoria_inicial) >= 2:
-            v0 = (trajetoria_inicial[-1] - trajetoria_inicial[-2]) / self.dt
-            self.x[self.dim_obs:2*self.dim_obs] = v0
-        if len(trajetoria_inicial) >= 3:
-            v_ant = (trajetoria_inicial[-2] - trajetoria_inicial[-3]) / self.dt
-            a0 = (self.x[self.dim_obs:2*self.dim_obs] - v_ant) / self.dt
-            self.x[2*self.dim_obs:] = a0
+            n_pts = min(len(trajetoria_inicial), 5)
+            v_smooth = (trajetoria_inicial[-1] - trajetoria_inicial[-n_pts]) / max(1e-3, (n_pts - 1) * self.dt)
+            self.x[self.dim_obs:2*self.dim_obs] = v_smooth
+        # Aceleração inicial zerada (modelo de velocidade contínua com perturbações de processo Q)
+        self.x[2*self.dim_obs:] = 0.0
 
     def prever_passo(self):
         """Passo de predição a priori (durante oclusão, sem medição)."""

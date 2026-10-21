@@ -1,0 +1,4 @@
+Erro médio da posição prevista (pixels; vídeo com 720 px de largura)
+horizonte | Random Forest | movimento constante | amostras
+  +1 s    |      33.3     |           24.4      | 23
+  +2 s    |      64.4     |           75.0      | 16

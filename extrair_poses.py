@@ -145,21 +145,35 @@ def processar_video_pose(video_path, baseline_csv, saida_csv, model_path="modelo
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--sintetico", default="videos/sintetico.mp4")
-    parser.add_argument("--sintetico-base", default="resultados/sintetico_previsao.csv")
-    parser.add_argument("--sintetico-saida", default="resultados/poses_sintetico.csv")
-    parser.add_argument("--real", default="videos/real.mp4")
-    parser.add_argument("--real-base", default="resultados/real_previsao.csv")
-    parser.add_argument("--real-saida", default="resultados/poses_real.csv")
+    parser = argparse.ArgumentParser(description="Extrai poses usando MediaPipe com mascaramento em oclusão.")
+    parser.add_argument("--todos", action="store_true", default=True, help="Processa todos os vídeos disponíveis na pasta")
+    parser.add_argument("--video", help="Vídeo específico para processar")
+    parser.add_argument("--base", help="CSV de previsão/log do baseline")
+    parser.add_argument("--saida", help="Caminho do CSV de saída de poses")
     args = parser.parse_args()
     
-    # 1. Processar vídeo sintético
-    processar_video_pose(args.sintetico, args.sintetico_base, args.sintetico_saida)
+    if args.video and args.base and args.saida:
+        processar_video_pose(args.video, args.base, args.saida)
+        return
+        
+    videos_config = [
+        ("sintetico", "videos/sintetico.mp4", "resultados/sintetico_previsao.csv", "resultados/poses_sintetico.csv"),
+        ("real", "videos/real.mp4", "resultados/real_previsao.csv", "resultados/poses_real.csv"),
+        ("rua_", "videos/rua_.mp4", "resultados/rua__previsao.csv", "resultados/poses_rua_.csv"),
+        ("cidade", "videos/cidade.mp4", "resultados/cidade_previsao.csv", "resultados/poses_cidade.csv"),
+        ("mato_video", "videos/mato_video.mp4", "resultados/mato_video_previsao.csv", "resultados/poses_mato_video.csv"),
+    ]
     
-    # 2. Processar vídeo real
-    processar_video_pose(args.real, args.real_base, args.real_saida)
-    print("\nExtração de poses concluída com sucesso para ambos os vídeos!")
+    for tag, v_path, b_path, s_path in videos_config:
+        if Path(v_path).exists() and Path(b_path).exists():
+            print(f"\n========================================================")
+            print(f"Extraindo Poses: {tag.upper()} ({v_path})")
+            print(f"========================================================")
+            processar_video_pose(v_path, b_path, s_path)
+        else:
+            print(f"[Pular] {tag}: arquivo {v_path} ou {b_path} não encontrado.")
+            
+    print("\nExtração de poses concluída para todos os vídeos disponíveis!")
 
 
 if __name__ == "__main__":
