@@ -5,3 +5,4 @@ numpy>=1.26
 matplotlib>=3.8
 joblib>=1.3
 opencv-python>=4.9
+mediapipe>=0.10.0
