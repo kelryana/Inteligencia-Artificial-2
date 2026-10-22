@@ -601,7 +601,7 @@ def main() -> None:
             else:
                 motivo = f"OCLUSAO - pessoa nao detectada ha {seg:.1f} s"
             linhas = [(f"t = {i / fps:5.1f} s  |  Estado: {motivo}", VERMELHO),
-                      ("Caixa vermelha: posicao estimada pelo modelo", VERMELHO)]
+                      ("Caixa vermelha: posicao estimada pelo modelo sob oclusao", VERMELHO)]
             est = None
             if i > ultimo and cam_f is not None:
                 est = cam_f[min(i - ultimo, len(cam_f) - 1)]
@@ -610,7 +610,10 @@ def main() -> None:
                 if i - ultimo_prev < len(cam):
                     est = cam[i - ultimo_prev]
             if est is not None:
-                caixa_translucida(img, caixa_de(est), VERMELHO, 0.2, 2)
+                cx_est = caixa_de(est)
+                caixa_translucida(img, cx_est, VERMELHO, 0.35, 3)
+                escrever(img, "ESTIMATIVA (RF)", (int(cx_est[0]), max(35, int(cx_est[1]) - 10)), 0.65, VERMELHO, 2)
+                cv2.circle(img, (int(est[0]), int(est[1])), 6, VERMELHO, -1)
         if len(trilha) > 1:
             cv2.polylines(img, [np.array(trilha[-int(6 * fps):], np.int32)], False, CIANO, 2, cv2.LINE_AA)
         desenhar_hud(img, linhas)
