@@ -52,7 +52,6 @@ Modelos Temporais Otimizados              Predição de Posição Futura
 ├── modelos_temporais.py             # Implementação dos modelos: EKF, LSTM, GRU, Transformer e T-GNN
 ├── avaliar_comparativo.py           # Benchmark comparativo de erro (RMSE) entre todas as arquiteturas
 ├── gerar_visualizacoes_completas.py # Geração da suíte de gráficos analíticos e dashboard geral
-├── relatorio_comparativo.md         # Relatório detalhado com discussões teóricas e empíricas
 ├── requirements.txt                 # Dependências do projeto
 │
 ├── modelos/                         # Modelos pré-treinados do MediaPipe Pose Landmarker
@@ -213,8 +212,6 @@ python avaliar_comparativo.py
 | **Micro-GRU** | 282.27 | 173.31 | 125.90 | 218.17 | 44.35 |
 | **Temporal Transformer** | **279.57** | 77.09 | **119.39** | 127.75 | 18.99 |
 | **T-GNN (Skeletal Graph)** | 282.71 | 43.52 | 126.51 | 195.05 | 121.62 |
-
-> *Para uma discussão teórica aprofundada dos resultados, consulte o arquivo [`relatorio_comparativo.md`](relatorio_comparativo.md).*
 
 ---
 

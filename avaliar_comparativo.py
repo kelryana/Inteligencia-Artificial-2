@@ -348,8 +348,8 @@ def gerar_grafico(todos_resultados, caminho_fig="resultados/grafico_comparativo_
     print(f"\nGráfico comparativo salvo com sucesso em: {caminho_fig}")
 
 
-def gerar_relatorio_md(todos_resultados, caminho_md="relatorio_comparativo.md"):
-    """Gera o relatorio_comparativo.md detalhado para todos os vídeos."""
+def gerar_relatorio_md(todos_resultados, caminho_md="resultados/relatorio_comparativo.md"):
+    """Gera o relatorio_comparativo.md detalhado para todos os vídeos na pasta resultados/."""
     nomes_videos = list(todos_resultados.keys())
     primeiro_video = nomes_videos[0]
     modelos = list(todos_resultados[primeiro_video].keys())
