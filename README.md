@@ -218,21 +218,75 @@ python avaliar_comparativo.py
 
 ---
 
-## Etapa 8 — Visualizações e Dashboards Analíticos (`gerar_visualizacoes_completas.py`)
+## Etapa 8 — Visualizações, Dashboards e Análise Gráfica Detalhada (`gerar_visualizacoes_completas.py`)
 
-Gera visualizações ricas de alta resolução reunindo todas as métricas em gráficos publicáveis:
+O módulo de visualização compila todas as informações brutas (registros temporais em CSV, arquivos de pose e métricas serializadas) em gráficos de alta resolução salvos em `resultados/`. Abaixo está a apresentação e a interpretação aprofundada de cada visualização gerada:
 
-```bash
-python gerar_visualizacoes_completas.py
-```
+---
 
-### Gráficos Gerados em `resultados/`:
-* `dashboard_analise_completa.png`: Painel geral integrando métricas por horizonte, dinâmica de velocidade, distribuição de estados e trajetórias.
-* `grafico_comparativo_modelos.png`: Comparação direta do RMSE entre todas as 6 arquiteturas nos 5 vídeos.
-* `grafico_estados_temporal.png`: Linha do tempo estilo Gantt demonstrando as transições de estado (`AGUARDANDO`, `RASTREANDO`, `OCLUSAO`, `PREVISAO`).
-* `grafico_trajetorias_2d_oclusao.png`: Projeção cartesiana $X \times Y$ da trajetória reconstruída por cada modelo durante a oclusão.
-* `grafico_erro_horizontes_rf_vs_constante.png`: Curva de erro em função do horizonte futuro (+1s, +2s, +3s, +4s).
-* `grafico_velocidade_dinamica.png`: Perfil de aceleração e velocidade dos pedestres ao longo do tempo.
+### 1. Dashboard Integrado de Análise Geral
+![Dashboard Geral de Análise](resultados/dashboard_analise_completa.png)
+
+* **O que representa:** Painel executivo 360° reunindo os 4 principais eixos analíticos do projeto em uma visão única:
+  * **(A) Erro de Posição sob Oclusão:** Curva comparativa de RMSE em pixels para os modelos temporais nos vídeos principais (*Sintético*, *Real* e *Cidade*).
+  * **(B) Distribuição Global de Quadros por Estado:** Gráfico de setores indicando o percentual total de tempo em que os alvos estiveram em rastreamento ativo (~61%), sob oclusão (~14%), aguardando aparição (~11%) ou em trecho de previsão futura (~14%).
+  * **(C) Projeção Espacial 2D no Vídeo Sintético:** Comparativo de trajetória espacial ($X \times Y$) durante o período em que o boneco atravessa a coluna de oclusão sombreada ($X \in [537, 742]$).
+  * **(D) Erro de Previsão por Horizonte Futuro:** Comparação direta da evolução do erro conforme o horizonte temporal avança (+1s até +4s) entre o Random Forest Residual e o Movimento Constante.
+
+---
+
+### 2. Comparativo Multimodelo de Erro sob Oclusão (RMSE)
+![Gráfico Comparativo de Modelos](resultados/grafico_comparativo_modelos.png)
+
+* **O que representa:** Gráfico de barras agrupadas comparando o erro médio quadrático de translação (**RMSE em pixels**) durante o período exato em que o pedestre esteve invisível, avaliado nas 6 arquiteturas (Random Forest, EKF, Micro-LSTM, Micro-GRU, Temporal Transformer e T-GNN) ao longo dos 5 vídeos de teste.
+* **Interpretação dos Resultados:**
+  * No **Vídeo Real (Bosque)**, o **Random Forest Baseline** obteve o menor erro absoluto (14.52 px), seguido de perto pelo **T-GNN** (43.52 px) e **EKF** (43.63 px), demonstrando que em trajetórias predominantemente inerciais, projeções residuais guiadas pela velocidade recente são extremamente robustas.
+  * No **Vídeo Rua (Perspectiva Vertical)**, o **Temporal Transformer** liderou com o menor erro (119.39 px) superando o Random Forest (164.13 px), comprovando a eficácia do mecanismo de atenção multi-cabeça em capturar acelerações não lineares geradas pelo efeito de perspectiva (pessoa se afastando no plano z).
+  * No **Vídeo Mato (Trilha Longa)**, a oclusão contínua em folhagens densas favoreceu modelos com regularização estrita: o Random Forest e o EKF mantiveram erro nulo ou residual, enquanto redes recorrentes puras acumularam desvios ao iterar autorregressivamente sobre pequenas oscilações de folhas.
+
+---
+
+### 3. Evolução Temporal dos Estados de Rastreamento (Diagrama de Gantt)
+![Evolução Temporal dos Estados](resultados/grafico_estados_temporal.png)
+
+* **O que representa:** Linha do tempo horizontal detalhando os intervalos e a duração de cada estado do rastreador para cada um dos vídeos:
+  * **AGUARDANDO (Cinza):** Período de calibração ou espera até o alvo entrar no campo de visão (destaque para o vídeo *Sintético*, com 1,5s iniciais de fundo limpo para calibração).
+  * **RASTREANDO (Verde):** Intervalo de visão desimpedida onde a CNN detecta o alvo com alta confiança ($IoU > 0.5$, score $\ge 0.5$).
+  * **OCLUSAO (Vermelho):** Janela em que a pessoa passa atrás de pilastras, árvores ou outros pedestres, ativando os modelos de reconstituição temporal.
+  * **PREVISAO (Laranja):** Extrapolação final de 4 segundos congelando o último frame e desenhando a trajetória prevista no futuro.
+* **Interpretação:** Evidencia a diversidade dos cenários testados: oclusões pontuais e curtas (*Cidade*), oclusões moderadas (*Sintético* e *Real*) e vídeos com tracking prolongado (*Mato* com 36.8s).
+
+---
+
+### 4. Projeção Espacial 2D das Trajetórias sob Oclusão
+![Trajetórias Espaciais 2D sob Oclusão](resultados/grafico_trajetorias_2d_oclusao.png)
+
+* **O que representa:** O traçado cartesiano bidimensional ($X$ horizontal vs $Y$ vertical em pixels) desenhado por cada algoritmo durante o período cego da oclusão, comparado ao Ground Truth (no sintético) ou à referência cinemática suavizada.
+* **Marcadores:** O círculo sólido ($\bullet$) indica o início da oclusão (último ponto observado) e o "X" indica a saída estimada da oclusão.
+* **Interpretação:**
+  * O **T-GNN** e o **Temporal Transformer** preservam a proporcionalidade da anatomia humana, evitando deformações bizarras nas articulações esqueléticas.
+  * O **EKF com velocidade suavizada** gera uma curva contínua elegante, evitando os estouros parabólicos causados por estimativas ruidosas de aceleração.
+  * O **Random Forest Residual** tende a seguir a direção média aprendida nos segundos que antecederam a oclusão com alta estabilidade.
+
+---
+
+### 5. Erro de Predição por Horizonte Futuro (Random Forest vs Movimento Constante)
+![Erro por Horizonte Random Forest vs Movimento Constante](resultados/grafico_erro_horizontes_rf_vs_constante.png)
+
+* **O que representa:** Comparação do erro médio de posição em pixels em 4 horizontes temporais crescentes (**+1s**, **+2s**, **+3s** e **+4s**) sob o protocolo *walk-forward*.
+* **Interpretação:** 
+  * Em horizontes curtos (+1s), a projeção de **Movimento Constante** é altamente competitiva devido à inércia natural do pedestre.
+  * À medida que o horizonte se afasta (+3s e +4s), o **Random Forest Residual** demonstra sua superioridade em cenários com variação de ritmo, aplicando uma ponderação calibrada (`--peso-rf 0.5`) que reduz a divergência acumulada da extrapolação puramente linear.
+
+---
+
+### 6. Perfil Dinâmico de Velocidade Observada
+![Dinâmica de Velocidade Observada](resultados/grafico_velocidade_dinamica.png)
+
+* **O que representa:** Curvas suavizadas por média móvel demonstrando a magnitude da velocidade instantânea (calculada pela hipotenusa das variações $\sqrt{\Delta x^2 + \Delta y^2} / \Delta t$ em pixels por segundo) da pessoa monitorada ao longo do tempo.
+* **Interpretação:** 
+  * Permite visualizar a velocidade perfeitamente constante do alvo procedural no vídeo *Sintético* (~120 px/s).
+  * Nos vídeos reais (*Real*, *Rua*, *Cidade*), ilustra as acelerações ao caminhar, desacelerações nas curvas e o efeito da perspectiva óptica (onde pedestres caminhando em direção à câmera aparentam aceleração aparente de velocidade em pixels devido à proximidade da lente).
 
 ---
 
