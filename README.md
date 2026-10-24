@@ -9,34 +9,31 @@ Este repositório contém um ecossistema completo de Visão Computacional e Apre
 
 ## Fluxo Arquitetural do Sistema
 
-```
-[Eixo 1 - Imagens]
-Imagens (CIFAR-10) ──> ResNet18 (Penúltima Camada) ──> Vetor 512D ──> Random Forest ──> Classe
+```mermaid
+flowchart TD
+    subgraph Eixo1["Eixo 1 — Classificação de Imagens"]
+        direction LR
+        A1["Imagens (CIFAR-10)"] --> A2["ResNet18 (Penúltima Camada)"]
+        A2 --> A3["Vetor 512D"]
+        A3 --> A4["Random Forest"]
+        A4 --> A5["Classe Prevista"]
+    end
 
-[Eixo 2 - Vídeos e Séries Temporais sob Oclusão]
-Vídeos (Sintético / Reais)
-       │
-       ▼
-Detecção & Percepção (Faster R-CNN / Subtração de Fundo)
-       │
-       ▼
-Rastreamento & Detecção de Oclusão (Estados: Rastreando, Oclusão, Aguardando)
-       │
-       ├────────────────────────────────────────┐
-       ▼                                        ▼
-Poses Articulares (MediaPipe)            Baseline Cinético & RF
-(33 marcos anatômicos ──> 5 centrais)   (Velocidades passadas ──> RF Residual)
-       │                                        │
-       ▼                                        ▼
-Modelos Temporais Otimizados              Predição de Posição Futura
-(EKF, LSTM, GRU, Transformer, T-GNN)            │
-       │                                        │
-       └──────────────────┬─────────────────────┘
-                          ▼
-            Avaliação Comparativa (RMSE px)
-                          │
-                          ▼
-       Dashboards Analíticos & Vídeos Anotados
+    subgraph Eixo2["Eixo 2 — Vídeos e Séries Temporais sob Oclusão"]
+        B1["Vídeos (Sintético / Reais)"] --> B2["Detecção & Percepção<br/>(Faster R-CNN / Subtração de Fundo)"]
+        B2 --> B3["Rastreamento & Detecção de Oclusão<br/>(Estados: Rastreando, Oclusão, Aguardando)"]
+        
+        B3 --> C1["Poses Articulares (MediaPipe)<br/>(33 marcos anatômicos ➔ 5 centrais)"]
+        B3 --> D1["Baseline Cinético & RF<br/>(Velocidades passadas ➔ RF Residual)"]
+        
+        C1 --> C2["Modelos Temporais Otimizados<br/>(EKF, LSTM, GRU, Transformer, T-GNN)"]
+        D1 --> D2["Predição de Posição Futura"]
+        
+        C2 --> E1["Avaliação Comparativa<br/>(RMSE em pixels)"]
+        D2 --> E1
+        
+        E1 --> E2["Dashboards Analíticos & Vídeos Anotados"]
+    end
 ```
 
 ---
